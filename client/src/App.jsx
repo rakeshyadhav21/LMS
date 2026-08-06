@@ -39,6 +39,7 @@ const App = () => {
           <Route path='students-enrolled' element={<StudentsEnrolled/>}/>
         </Route>
       </Routes>
+
     </div>
   )
 }

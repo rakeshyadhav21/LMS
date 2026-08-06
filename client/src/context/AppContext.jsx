@@ -3,9 +3,9 @@ import { dummyCourses } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import humanizeDuration from 'humanized-duration'
 
-const AppContext = createContext();
+export const AppContext = createContext();
 
-const AppContextProvider = (props) => {
+export const AppContextProvider = (props) => {
 
     const currency = import.meta.env.VITE_CURRENCY || '$';
 
@@ -65,11 +65,8 @@ const AppContextProvider = (props) => {
     }
 
     useEffect(() => {
-        const initializeData = async () => {
-            fetchAllCourses();
-            await fetchUserEnrolledCourses();
-        };
-        initializeData();
+        fetchAllCourses();
+        fetchUserEnrolledCourses();
     }, []);
 
     const value = {
@@ -85,5 +82,3 @@ const AppContextProvider = (props) => {
         </AppContext.Provider>
     )
 }
-
-export {AppContext, AppContextProvider}
