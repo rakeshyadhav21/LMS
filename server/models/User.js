@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema(
         _id : { type: String, required: true },
         name : { type: String, required: true },
         email : { type: String, required: true },
-        imageURL : { type: String, required: true },
+        imageURL : { type: String},
         enrolledCourses : [
             {
                 type : mongoose.Schema.Types.ObjectId,

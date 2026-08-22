@@ -1,57 +1,53 @@
-import { Webhook } from "svix";
-import User from "../models/User.js";
-
-// API Controller Function to Manage Clerk User with database
-
 export const clerkWebhooks = async (req, res) => {
   try {
+    console.log("CLERK WEBHOOK RECEIVED");
+
     const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
-    await whook.verify(JSON.stringify(req.body), {
+    const headers = {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
       "svix-signature": req.headers["svix-signature"],
-    });
+    };
 
-    const { data, type } = req.body;
+    console.log("Verifying webhook...");
+
+    const payload = whook.verify(req.body, headers);
+
+    console.log("Webhook verified");
+
+    const { data, type } = payload;
+
+    console.log("Event type:", type);
+    console.log("Clerk User ID:", data.id);
 
     switch (type) {
       case "user.created": {
         const userData = {
           _id: data.id,
-          email: data.email_addresses[0].email_address,
-          name: data.first_name + " " + data.last_name,
+          email: data.email_addresses?.[0]?.email_address,
+          name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
           imageURL: data.image_url,
         };
+
+        console.log("Creating MongoDB user:", userData);
 
         await User.create(userData);
-        res.json({});
-        break;
+
+        console.log("User created in MongoDB:", data.id);
+
+        return res.status(200).json({
+          success: true,
+          message: "User created successfully",
+        });
       }
 
-      case "user.updated": {
-        const userData = {
-          email: data.email_addresses[0].email_address,
-          name: data.first_name + " " + data.last_name,
-          imageURL: data.image_url,
-        };
-
-        await User.findByIdAndUpdate(data.id, userData);
-        res.json({});
-        break;
-      }
-
-      case "user.deleted": {
-        await User.findByIdAndDelete(data.id);
-        res.json({});
-        break;
-      }
-
-      default:
-        break;
+      // keep your other cases...
     }
   } catch (error) {
-    res.json({
+    console.error("Clerk webhook error:", error);
+
+    return res.status(400).json({
       success: false,
       message: error.message,
     });
